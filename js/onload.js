@@ -1,10 +1,10 @@
-document.addEventListener("DOMContentLoaded", 
-    function (event) {
-        var writer = {};  //Onload namespace
+document.addEventListener("DOMContentLoaded",
+    function(event) {
+        var onLoad = {}; //Onload namespace
 
         var canvas = document.getElementById("game-area");
-        writer.canvas = canvas;
-        window.writer = writer;
+        onLoad.canvas = canvas;
+        window.onLoad = onLoad;
 
         script();
 

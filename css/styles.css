@@ -1,19 +1,18 @@
-
-
-html, body {
+html,
+body {
     height: 100%;
+    background-color: rgba(0, 247, 125, 0.5);
     margin: 0;
+    box-sizing: border-box;
 }
 
 .full-height {
-    /*background-color: #50C878;*/
-    background-color: rgba(0,247,125,0.7);
-    height: 100%;
-    padding : 5% 5% 3%;
+    height: 88%;
     text-align: center;
+    padding-top: 5%;
 }
 
 #game-area {
+    border-radius: 30px;
     background-color: #333;
-    box-shadow: 5px 5px rgba(5,5,5,0.4);
 }
