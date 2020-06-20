@@ -40,7 +40,6 @@ function script() {
 
     function mouseMove(event) {
         right_paddle.y = event.offsetY;
-        right_paddle.draw();
 
     }
 
