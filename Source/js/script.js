@@ -1,7 +1,10 @@
 function script() {
     var canvas = onLoad.canvas;
+
     canvas.width = canvas.parentElement.offsetWidth * 0.9;
     canvas.height = canvas.parentElement.offsetHeight * 0.9;
+    canvas.addEventListener("mousemove", mouseMove);
+
     var ctx = canvas.getContext("2d");
 
     res = {
@@ -24,23 +27,19 @@ function script() {
 
     ball = new Ball(ctx, canvas.width / 2, canvas.height / 2, res.ball.radius);
 
-    canvas.addEventListener("mousemove", mouseMove);
-
     left_paddle.draw();
     right_paddle.draw();
     ball.draw();
 
-
     setInterval(updateGameArea, 50);
+
+    function mouseMove(event) {
+        right_paddle.y = event.offsetY;
+    }
 
     function updateGameArea() {
         clear();
         update();
-    }
-
-    function mouseMove(event) {
-        right_paddle.y = event.offsetY;
-
     }
 
     function clear() {
@@ -52,7 +51,6 @@ function script() {
         right_paddle.draw();
         ball.draw();
     }
-
 }
 
 
