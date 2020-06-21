@@ -10,8 +10,6 @@ function script() {
         play();
     }
 
-    this.time = 0;
-
     function play() {
         requestAnimationFrame(play);
 
@@ -25,13 +23,21 @@ function script() {
     }
 
     var canvas = onLoad.canvas;
+    var controller = document.getElementById("control-pad");
+    this.time = 0;
+
     canvas.width = canvas.parentElement.offsetWidth * 0.9;
     canvas.height = canvas.parentElement.offsetHeight * 0.9;
     canvas.addEventListener("mousemove", mouseMove);
-    canvas.addEventListener("touchmove", touchMove);
+    controller.addEventListener("touchmove", touchMove);
 
 
     var ctx = canvas.getContext("2d");
+
+    function mapper(x) {
+        var slope = canvas.height / controller.offsetHeight;
+        return ~~(slope * x);
+    }
 
     res = {
         paddle: {
@@ -60,7 +66,7 @@ function script() {
 
     function touchMove(event) {
         event.preventDefault();
-        right_paddle.y = event.touches[0].clientY - right_paddle.height / 2;
+        right_paddle.y = mapper((event.touches[0].clientY - window.innerHeight + controller.offsetHeight)) - right_paddle.height / 2;
         right_paddle.constraint();
     }
 
