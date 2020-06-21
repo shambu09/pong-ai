@@ -10,6 +10,8 @@ function script() {
         play();
     }
 
+    this.time = 0;
+
     function play() {
         requestAnimationFrame(play);
 
@@ -26,6 +28,8 @@ function script() {
     canvas.width = canvas.parentElement.offsetWidth * 0.9;
     canvas.height = canvas.parentElement.offsetHeight * 0.9;
     canvas.addEventListener("mousemove", mouseMove);
+    canvas.addEventListener("touchmove", touchMove);
+
 
     var ctx = canvas.getContext("2d");
 
@@ -50,11 +54,19 @@ function script() {
     ball = new Ball(canvas, ctx, canvas.width / 2, canvas.height / 2, res.ball.radius);
 
     function mouseMove(event) {
-        right_paddle.y = event.offsetY - right_paddle.height / 2;
+        right_paddle.y = event.offsetY;
+        right_paddle.constraint();
+    }
+
+    function touchMove(event) {
+        event.preventDefault();
+        right_paddle.y = event.touches[0].clientY - right_paddle.height / 2;
         right_paddle.constraint();
     }
 
     function updateGameArea() {
+        this.time += 1;
+        if (this.time >= 60) { this.time = 60; }
         clear();
         update();
         requestAnimationFrame(updateGameArea);
@@ -66,10 +78,10 @@ function script() {
     }
 
     function update() {
+        ball.update(left_paddle, right_paddle);
         left_paddle.draw();
         right_paddle.draw();
-        ball.update(left_paddle, right_paddle);
-        left_paddle.idiotAi(ball.y);
+        left_paddle.idiotAi(ball, this.time);
     }
 }
 
@@ -82,6 +94,12 @@ class Paddle {
         this.y = y;
         this.width = width;
         this.height = height;
+        this.ai = {
+            impactDistance: null,
+            impactTime: null,
+            speed: null,
+            targetY: null,
+        };
     }
 
     draw() {
@@ -97,8 +115,21 @@ class Paddle {
         }
     }
 
-    idiotAi(y) {
-        this.y = y - this.height / 2;
+    idiotAi(ball, delta) {
+        this.ai.speed = 0.35;
+        if (ball.velocity.x < 0) {
+            this.ai.impactDistance = ball.x - ball.radius;
+            this.ai.impactTime = this.ai.impactDistance / ball.velocity.x;
+            this.ai.targetY = ball.y + ball.velocity.y * this.ai.impactTime;
+
+            if (this.ai.targetY < this.y + this.height / 2) {
+                this.ai.speed = -this.ai.speed;
+            }
+
+            this.ai.speed *= delta
+            this.y += this.ai.speed;
+        }
+        this.constraint();
     }
 }
 
@@ -142,31 +173,33 @@ class Ball {
     }
 
     move() {
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
-    }
-
-    constraint(width, height) {
-        if (this.y >= height || this.y <= 0 || this.x >= width || this.x <= 0) {
-            this.reset();
+        if (this.y + this.radius + 5 > this.canvas.height || this.y < this.radius + 5) {
+            this.velocity.y *= -1;
+            this.upside = false;
+            this.y += this.velocity.y;
         }
 
-        if (this.y >= height - this.radius - 7 || this.y <= this.radius + 7) {
+        // if (this.y > this.canvas.height) {
+        //     this.y = this.canvas.height - this.radius - 10;
+        // }
 
-            if (this.upside) {
-                this.velocity.y *= -1;
-                this.y += this.velocity.y / Math.abs(this.velocity.y) * 7;
-                this.upside = false;
-            }
+        // if (this.y < 0) {
+        //     this.y = this.radius + 10;
+        // }
 
-        } else if (this.y <= height - this.radius - 25 && this.y >= this.radius + 25) {
-            this.upside = true
+        this.y += this.velocity.y;
+        this.x += this.velocity.x;
+        this.constraint()
+    }
+
+    constraint() {
+        if (this.x >= this.canvas.width || this.x <= 0) {
+            this.reset();
         }
     }
 
     update(paddleL, paddle) {
         this.draw();
-        this.constraint(this.canvas.width, this.canvas.height);
         this.paddle_hit(paddle.x, paddle.y, paddle.height,
             paddle.width, paddleL.x, paddleL.y);
         this.move();
