@@ -33,8 +33,8 @@ function script() {
     controller.addEventListener("touchmove", touchMove);
     var ctx = canvas.getContext("2d");
 
-    function mapper(y, x, radius) {
-        radius = 2 * radius;
+    function mapper(y, x) {
+        radius = finger.offsetWidth;
         if (x > controller.offsetWidth - radius) {
             x = controller.offsetWidth - radius;
         } else if (x < 0) {
@@ -86,8 +86,7 @@ function script() {
     function touchMove(event) {
         event.preventDefault();
         right_paddle.y = mapper((event.touches[0].clientY - window.innerHeight + controller.offsetHeight),
-            event.touches[0].clientX,
-            event.touches[0].radiusX) - right_paddle.height / 2;
+            event.touches[0].clientX) - right_paddle.height / 2;
         right_paddle.constraint();
     }
 
