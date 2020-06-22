@@ -6,6 +6,5 @@ document.addEventListener("DOMContentLoaded",
         onLoad.canvas = canvas;
         window.onLoad = onLoad;
         script();
-
     }
 );

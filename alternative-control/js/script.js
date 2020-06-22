@@ -24,40 +24,59 @@ function script() {
 
     var canvas = onLoad.canvas;
     var controller = document.getElementById("control-pad");
+    var finger = document.getElementById("finger");
+    finger.style.backgroundColor = "white";
     this.time = 0;
 
-    canvas.width = canvas.parentElement.offsetWidth * 0.9;
-    canvas.height = canvas.parentElement.offsetHeight * 0.9;
+    window.addEventListener("resize", reset, false);
     canvas.addEventListener("mousemove", mouseMove);
     controller.addEventListener("touchmove", touchMove);
-
-
     var ctx = canvas.getContext("2d");
 
-    function mapper(x) {
-        var slope = canvas.height / controller.offsetHeight;
-        return ~~(slope * x);
-    }
-
-    res = {
-        paddle: {
-            width: canvas.width / 100,
-            height: canvas.height / 6
-        },
-        ball: {
-            radius: canvas.width / 150
+    function mapper(y, x, radius) {
+        radius = 2 * radius;
+        if (x > controller.offsetWidth - radius) {
+            x = controller.offsetWidth - radius;
+        } else if (x < 0) {
+            x = 0;
         }
+        if (y > controller.offsetHeight - radius) {
+            y = controller.offsetHeight - radius;
+        } else if (y < 0) {
+            y = 0;
+        }
+        finger.setAttribute("style", `width:${radius}px; height:${radius}px; top:${y}px; left:${x}px`);
+        x = controller.offsetWidth * (1 - x / controller.offsetWidth);
+        var slope = canvas.height / (0.6 * controller.offsetWidth + 2.5 * controller.offsetHeight);
+        return ~~(slope * (0.6 * x + 2.5 * y));
     }
 
-    left_paddle = new Paddle(canvas, ctx, 10, canvas.height / 2 - res.paddle.height / 2,
-        res.paddle.width, res.paddle.height);
 
-    right_paddle = new Paddle(canvas, ctx, canvas.width - 10 - res.paddle.width,
-        canvas.height / 2 - res.paddle.height / 2,
-        res.paddle.width,
-        res.paddle.height)
+    function reset() {
+        canvas.width = canvas.parentElement.offsetWidth * 0.9;
+        canvas.height = canvas.parentElement.offsetHeight * 0.9;
+        res = {
+            paddle: {
+                width: canvas.width / 100,
+                height: canvas.height / 6
+            },
+            ball: {
+                radius: canvas.width / 150
+            }
+        }
 
-    ball = new Ball(canvas, ctx, canvas.width / 2, canvas.height / 2, res.ball.radius);
+        left_paddle = new Paddle(canvas, ctx, 10, canvas.height / 2 - res.paddle.height / 2,
+            res.paddle.width, res.paddle.height);
+
+        right_paddle = new Paddle(canvas, ctx, canvas.width - 10 - res.paddle.width,
+            canvas.height / 2 - res.paddle.height / 2,
+            res.paddle.width,
+            res.paddle.height)
+
+        ball = new Ball(canvas, ctx, canvas.width / 2, canvas.height / 2, res.ball.radius);
+    }
+
+    reset();
 
     function mouseMove(event) {
         right_paddle.y = event.offsetY;
@@ -66,7 +85,9 @@ function script() {
 
     function touchMove(event) {
         event.preventDefault();
-        right_paddle.y = mapper((event.touches[0].clientY - window.innerHeight + controller.offsetHeight)) - right_paddle.height / 2;
+        right_paddle.y = mapper((event.touches[0].clientY - window.innerHeight + controller.offsetHeight),
+            event.touches[0].clientX,
+            event.touches[0].radiusX) - right_paddle.height / 2;
         right_paddle.constraint();
     }
 
@@ -146,7 +167,7 @@ class Ball {
         this.x = x;
         this.y = y;
         this.radius = radius;
-        this.velocity = new Vector2D(15, ~~(Math.random() * 20) - 10);
+        this.velocity = new Vector2D(17, ~~(Math.random() * 22) - 10);
         this.pInterB = null;
         this.angle = null;
         this.offsideLeft = true;
@@ -184,14 +205,6 @@ class Ball {
             this.upside = false;
             this.y += this.velocity.y;
         }
-
-        // if (this.y > this.canvas.height) {
-        //     this.y = this.canvas.height - this.radius - 10;
-        // }
-
-        // if (this.y < 0) {
-        //     this.y = this.radius + 10;
-        // }
 
         this.y += this.velocity.y;
         this.x += this.velocity.x;
